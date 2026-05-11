@@ -1,0 +1,2159 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Java DateTime Referenz – LocalDate, LocalDateTime, ZonedDateTime</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card-bg: #161b22;
+      --text: #c9d1d9;
+      --text-light: #8b949e;
+      --accent: #58a6ff;
+      --code-bg: #1f6feb1a;
+      --border: #30363d;
+      --hover: #21262d;
+      --input-bg: #0d1117;
+      --input-border: #30363d;
+      --btn-bg: #238636;
+      --tab-bg: #161b22;
+      --tab-active: #238636;
+      --tab-hover: #30363d;
+    }
+    [data-theme="light"] {
+      --bg: #ffffff;
+      --card-bg: #f6f8fa;
+      --text: #24292f;
+      --text-light: #57606a;
+      --accent: #0969da;
+      --code-bg: #f6f8fa;
+      --border: #d0d7de;
+      --hover: #f3f4f6;
+      --input-bg: #ffffff;
+      --input-border: #d0d7de;
+      --btn-bg: #2da44e;
+      --tab-bg: #f6f8fa;
+      --tab-active: #2da44e;
+      --tab-hover: #e1e4e8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+      transition: background 0.3s, color 0.3s;
+    }
+    h1 {
+      text-align: center;
+      color: var(--accent);
+      margin-bottom: 20px;
+      font-size: 2rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 15px;
+    }
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .tab {
+      padding: 12px 20px;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--tab-bg);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      transition: all 0.2s;
+      min-width: 140px;
+      text-align: center;
+    }
+    .tab:hover { background: var(--tab-hover); }
+    .tab.active { background: var(--tab-active); color: white; border-color: var(--tab-active); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 25px;
+      align-items: center;
+    }
+    .search-box {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+      max-width: 400px;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 10px 40px 10px 14px;
+      font-size: 1rem;
+      border: 1px solid var(--input-border);
+      border-radius: 6px;
+      background: var(--input-bg);
+      color: var(--text);
+      outline: none;
+    }
+    .search-box::before {
+      content: "Search";
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+      font-size: 1.2rem;
+    }
+    .btn {
+      padding: 10px 16px;
+      font-size: 0.95rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .pdf-btn { background: var(--accent); color: white; }
+    .pdf-btn:hover { background: #1f6feb; }
+    .theme-btn { background: var(--btn-bg); color: white; }
+    .theme-btn:hover { opacity: 0.9; }
+    .method-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+      margin-bottom: 16px;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      display: none;
+    }
+    .method-card.show { display: block; }
+    .method-card:hover {
+      background-color: var(--hover);
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+    .method-header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+    }
+    .method-name {
+      font-weight: 600;
+      color: var(--accent);
+      font-family: 'Courier New', monospace;
+    }
+    .return-type {
+      color: #79c0ff;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+    .description {
+      color: var(--text-light);
+      margin: 12px 0;
+      font-size: 0.95rem;
+    }
+    .example {
+      background-color: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+      font-family: 'Courier New', Courier, monospace;
+      color: var(--accent);
+      font-size: 0.92rem;
+      overflow-x: auto;
+      white-space: pre;
+      position: relative;
+    }
+    .example::before {
+      content: "Beispiel:";
+      color: var(--text-light);
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      font-size: 0.7rem;
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .example:hover .copy-btn { opacity: 1; }
+    .no-results {
+      text-align: center;
+      color: var(--text-light);
+      font-style: italic;
+      margin: 30px 0;
+      display: none;
+    }
+    @media print {
+      body, [data-theme="light"], [data-theme="dark"] { background: white !important; color: black !important; }
+      .controls, .tabs, .copy-btn, .search-box::before { display: none !important; }
+      .method-card { background: white !important; border: 1px solid #ccc !important; box-shadow: none !important; page-break-inside: avoid; margin-bottom: 12px; }
+      .method-name, .return-type { color: #0066cc !important; }
+      .example { background: #f8f8f8 !important; border: 1px solid #ddd !important; color: #0066cc !important; }
+      h1 { color: #0066cc !important; border-bottom: 2px solid #0066cc !important; }
+      .no-results { display: none !important; }
+      .tab-content { display: block !important; }
+    }
+    @media (max-width: 600px) {
+      .controls { flex-direction: column; }
+      .search-box { max-width: 100%; }
+      .btn { width: 100%; }
+      .tab { min-width: 100px; font-size: 0.9rem; padding: 10px 12px; }
+      h1 { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body data-theme="dark">
+
+  <h1>Java DateTime Referenz</h1>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="localdate">LocalDate</div>
+    <div class="tab" data-tab="localdatetime">LocalDateTime</div>
+    <div class="tab" data-tab="zoneddatetime">ZonedDateTime</div>
+  </div>
+
+  <!-- === LocalDate === -->
+  <div id="localdate" class="tab-content active">
+    <div class="controls">
+      <div class="search-box">
+        <input type="text" class="search-input" placeholder="LocalDate suchen..." autocomplete="off">
+      </div>
+      <button class="btn theme-btn toggle-btn">Light Mode</button>
+      <button class="btn pdf-btn" onclick="window.print()">PDF Export</button>
+    </div>
+    <div class="no-results">Keine LocalDate-Methoden gefunden.</div>
+
+    <div class="method-card" data-keywords="adjustinto temporal anpassen">
+      <div class="method-header">
+        <div class="method-name">adjustInto(Temporal temporal)</div>
+        <div class="return-type">Temporal</div>
+      </div>
+      <div class="description">Passt ein temporales Objekt an dieses Datum an.</div>
+      <div class="example">
+LocalDateTime ldt = LocalDateTime.now();
+LocalDate adjusted = LocalDate.now().adjustInto(ldt);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="atstartofday mitternacht start">
+      <div class="method-header">
+        <div class="method-name">atStartOfDay()</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Kombiniert Datum mit Mitternacht.</div>
+      <div class="example">
+LocalDateTime start = LocalDate.now().atStartOfDay();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="atstartofday zone zeitzone zoneddatetime">
+      <div class="method-header">
+        <div class="method-name">atStartOfDay(ZoneId zone)</div>
+        <div class="return-type">ZonedDateTime</div>
+      </div>
+      <div class="description">Früheste gültige Zeit in der Zeitzone.</div>
+      <div class="example">
+ZonedDateTime zdt = LocalDate.now().atStartOfDay(ZoneId.of("Europe/Paris"));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="attime stunde minute zeit">
+      <div class="method-header">
+        <div class="method-name">atTime(int hour, int minute)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Kombiniert mit Stunde und Minute.</div>
+      <div class="example">
+LocalDateTime dt = LocalDate.now().atTime(14, 30);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="attime stunde minute sekunde">
+      <div class="method-header">
+        <div class="method-name">atTime(int h, int m, int s)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Mit Sekunden.</div>
+      <div class="example">
+LocalDateTime dt = LocalDate.now().atTime(14, 30, 0);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="attime stunde minute sekunde nanosekunde">
+      <div class="method-header">
+        <div class="method-name">atTime(int h, int m, int s, int n)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Mit Nanosekunden.</div>
+      <div class="example">
+LocalDateTime dt = LocalDate.now().atTime(14, 30, 0, 500_000_000);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="attime localtime zeitobjekt">
+      <div class="method-header">
+        <div class="method-name">atTime(LocalTime time)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Mit LocalTime-Objekt.</div>
+      <div class="example">
+LocalDateTime dt = LocalDate.now().atTime(LocalTime.NOON);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="attime offsettime offset">
+      <div class="method-header">
+        <div class="method-name">atTime(OffsetTime time)</div>
+        <div class="return-type">OffsetDateTime</div>
+      </div>
+      <div class="description">Mit OffsetTime.</div>
+      <div class="example">
+OffsetDateTime odt = LocalDate.now().atTime(OffsetTime.of(LocalTime.NOON, ZoneOffset.UTC));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="compareto vergleichen vergleich">
+      <div class="method-header">
+        <div class="method-name">compareTo(ChronoLocalDate other)</div>
+        <div class="return-type">int</div>
+      </div>
+      <div class="description">Vergleicht zwei Daten.</div>
+      <div class="example">
+int cmp = LocalDate.now().compareTo(LocalDate.of(2000, 1, 1));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="datesuntil stream tage zwischen">
+      <div class="method-header">
+        <div class="method-name">datesUntil(LocalDate endExclusive)</div>
+        <div class="return-type">Stream&lt;LocalDate&gt;</div>
+      </div>
+      <div class="description">Stream aller Tage bis exklusiv.</div>
+      <div class="example">
+long count = LocalDate.of(2025,1,1).datesUntil(LocalDate.of(2025,1,10)).count(); // 9
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="datesuntil stream schritt monate wochen">
+      <div class="method-header">
+        <div class="method-name">datesUntil(LocalDate end, Period step)</div>
+        <div class="return-type">Stream&lt;LocalDate&gt;</div>
+      </div>
+      <div class="description">Stream mit Schritt (z. B. alle 2 Monate).</div>
+      <div class="example">
+LocalDate.now().datesUntil(LocalDate.now().plusYears(1), Period.ofMonths(2)).forEach(System.out::println);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="equals gleich gleichheit">
+      <div class="method-header">
+        <div class="method-name">equals(Object obj)</div>
+        <div class="return-type">boolean</div>
+      </div>
+      <div class="description">Prüft Gleichheit.</div>
+      <div class="example">
+boolean equal = LocalDate.now().equals(LocalDate.now()); // true
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="format datum formatieren string">
+      <div class="method-header">
+        <div class="method-name">format(DateTimeFormatter fmt)</div>
+        <div class="return-type">String</div>
+      </div>
+      <div class="description">Formatiert mit Formatter.</div>
+      <div class="example">
+String s = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="from temporal static erzeugen">
+      <div class="method-header">
+        <div class="method-name">from(TemporalAccessor t)</div>
+        <div class="return-type">static LocalDate</div>
+      </div>
+      <div class="description">Aus temporalem Objekt.</div>
+      <div class="example">
+LocalDate date = LocalDate.from(LocalDateTime.now());
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="get feld wert chronofield">
+      <div class="method-header">
+        <div class="method-name">get(TemporalField field)</div>
+        <div class="return-type">int</div>
+      </div>
+      <div class="description">Wert eines Feldes.</div>
+      <div class="example">
+int day = LocalDate.now().get(ChronoField.DAY_OF_MONTH);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="getchronology iso chronologie">
+      <div class="method-header">
+        <div class="method-name">getChronology()</div>
+        <div class="return-type">IsoChronology</div>
+      </div>
+      <div class="description">Gibt ISO-Chronologie.</div>
+      <div class="example">
+IsoChronology chrono = LocalDate.now().getChronology();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="getdayofmonth tag monat">
+      <div class="method-header">
+        <div class="method-name">getDayOfMonth()</div>
+        <div class="return-type">int</div>
+      </div>
+      <div class="description">Tag im Monat.</div>
+      <div class="example">
+int tag = LocalDate.now().getDayOfMonth();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="getdayofweek wochentag dayofweek">
+      <div class="method-header">
+        <div class="method-name">getDayOfWeek()</div>
+        <div class="return-type">DayOfWeek</div>
+      </div>
+      <div class="description">Wochentag als Enum.</div>
+      <div class="example">
+DayOfWeek dow = LocalDate.now().getDayOfWeek();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="getdayofyear tag jahr">
+      <div class="method-header">
+        <div class="method-name">getDayOfYear()</div>
+        <div class="return-type">int</div>
+      </div>
+      <div class="description">Tag im Jahr.</div>
+      <div class="example">
+int doy = LocalDate.now().getDayOfYear();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="getera ära ce bce">
+      <div class="method-header">
+        <div class="method-name">getEra()</div>
+        <div class="return-type">IsoEra</div>
+      </div>
+      <div class="description">Ära (CE/BCE).</div>
+      <div class="example">
+IsoEra era = LocalDate.now().getEra();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="getlong feld long chronofield">
+      <div class="method-header">
+        <div class="method-name">getLong(TemporalField f)</div>
+        <div class="return-type">long</div>
+      </div>
+      <div class="description">Feldwert als long.</div>
+      <div class="example">
+long year = LocalDate.now().getLong(ChronoField.YEAR);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="getmonth monat month enum">
+      <div class="method-header">
+        <div class="method-name">getMonth()</div>
+        <div class="return-type">Month</div>
+      </div>
+      <div class="description">Monat als Enum.</div>
+      <div class="example">
+Month mon = LocalDate.now().getMonth();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="getmonthvalue monat zahl 1-12">
+      <div class="method-header">
+        <div class="method-name">getMonthValue()</div>
+        <div class="return-type">int</div>
+      </div>
+      <div class="description">Monat als Zahl (1–12).</div>
+      <div class="example">
+int m = LocalDate.now().getMonthValue();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="getyear jahr">
+      <div class="method-header">
+        <div class="method-name">getYear()</div>
+        <div class="return-type">int</div>
+      </div>
+      <div class="description">Jahr.</div>
+      <div class="example">
+int y = LocalDate.now().getYear();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="hashcode hash">
+      <div class="method-header">
+        <div class="method-name">hashCode()</div>
+        <div class="return-type">int</div>
+      </div>
+      <div class="description">Hash-Code.</div>
+      <div class="example">
+int hash = LocalDate.now().hashCode();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="isafter nach später">
+      <div class="method-header">
+        <div class="method-name">isAfter(ChronoLocalDate d)</div>
+        <div class="return-type">boolean</div>
+      </div>
+      <div class="description">Ist nach anderem Datum?</div>
+      <div class="example">
+boolean after = LocalDate.now().isAfter(LocalDate.of(2000,1,1));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="isbefore vor früher">
+      <div class="method-header">
+        <div class="method-name">isBefore(ChronoLocalDate d)</div>
+        <div class="return-type">boolean</div>
+      </div>
+      <div class="description">Ist vor anderem Datum?</div>
+      <div class="example">
+boolean before = LocalDate.of(2000,1,1).isBefore(LocalDate.now());
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="isequal gleich identisch">
+      <div class="method-header">
+        <div class="method-name">isEqual(ChronoLocalDate d)</div>
+        <div class="return-type">boolean</div>
+      </div>
+      <div class="description">Ist gleich?</div>
+      <div class="example">
+boolean eq = LocalDate.now().isEqual(LocalDate.now());
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="isleapyear schaltjahr leap">
+      <div class="method-header">
+        <div class="method-name">isLeapYear()</div>
+        <div class="return-type">boolean</div>
+      </div>
+      <div class="description">Ist Schaltjahr?</div>
+      <div class="example">
+boolean leap = LocalDate.of(2024,1,1).isLeapYear(); // true
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="issupported feld chronofield">
+      <div class="method-header">
+        <div class="method-name">isSupported(TemporalField f)</div>
+        <div class="return-type">boolean</div>
+      </div>
+      <div class="description">Unterstützt Feld?</div>
+      <div class="example">
+boolean sup = LocalDate.now().isSupported(ChronoField.HOUR_OF_DAY); // false
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="issupported einheit chronounit">
+      <div class="method-header">
+        <div class="method-name">isSupported(TemporalUnit u)</div>
+        <div class="return-type">boolean</div>
+      </div>
+      <div class="description">Unterstützt Einheit?</div>
+      <div class="example">
+boolean sup = LocalDate.now().isSupported(ChronoUnit.DAYS); // true
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="lengthofmonth tage monat">
+      <div class="method-header">
+        <div class="method-name">lengthOfMonth()</div>
+        <div class="return-type">int</div>
+      </div>
+      <div class="description">Tage im Monat.</div>
+      <div class="example">
+int days = LocalDate.of(2025,2,1).lengthOfMonth(); // 28
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="lengthofyear tage jahr">
+      <div class="method-header">
+        <div class="method-name">lengthOfYear()</div>
+        <div class="return-type">int</div>
+      </div>
+      <div class="description">Tage im Jahr.</div>
+      <div class="example">
+int days = LocalDate.of(2024,1,1).lengthOfYear(); // 366
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="minus subtrahieren einheit chronounit">
+      <div class="method-header">
+        <div class="method-name">minus(long a, TemporalUnit u)</div>
+        <div class="return-type">LocalDate</div>
+      </div>
+      <div class="description">Subtrahiert Einheit.</div>
+      <div class="example">
+LocalDate past = LocalDate.now().minus(5, ChronoUnit.MONTHS);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="minus period subtrahieren">
+      <div class="method-header">
+        <div class="method-name">minus(TemporalAmount a)</div>
+        <div class="return-type">LocalDate</div>
+      </div>
+      <div class="description">Subtrahiert Period.</div>
+      <div class="example">
+LocalDate past = LocalDate.now().minus(Period.ofYears(1));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="minusdays tage subtrahieren">
+      <div class="method-header">
+        <div class="method-name">minusDays(long d)</div>
+        <div class="return-type">LocalDate</div>
+      </div>
+      <div class="description">Subtrahiert Tage.</div>
+      <div class="example">
+LocalDate weekAgo = LocalDate.now().minusDays(7);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="minusmonths monate subtrahieren">
+      <div class="method-header">
+        <div class="method-name">minusMonths(long m)</div>
+        <div class="return-type">LocalDate</div>
+      </div>
+      <div class="description">Subtrahiert Monate.</div>
+      <div class="example">
+LocalDate m = LocalDate.now().minusMonths(3);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="minusweeks wochen subtrahieren">
+      <div class="method-header">
+        <div class="method-name">minusWeeks(long w)</div>
+        <div class="return-type">LocalDate</div>
+      </div>
+      <div class="description">Subtrahiert Wochen.</div>
+      <div class="example">
+LocalDate w = LocalDate.now().minusWeeks(2);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="minusyears jahre subtrahieren">
+      <div class="method-header">
+        <div class="method-name">minusYears(long y)</div>
+        <div class="return-type">LocalDate</div>
+      </div>
+      <div class="description">Subtrahiert Jahre.</div>
+      <div class="example">
+LocalDate y = LocalDate.now().minusYears(10);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="now heute aktuell datum">
+      <div class="method-header">
+        <div class="method-name">now()</div>
+        <div class="return-type">static LocalDate</div>
+      </div>
+      <div class="description">Aktuelles Datum.</div>
+      <div class="example">
+LocalDate today = LocalDate.now();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="now clock uhr">
+      <div class="method-header">
+        <div class="method-name">now(Clock clock)</div>
+        <div class="return-type">static LocalDate</div>
+      </div>
+      <div class="description">Mit Clock.</div>
+      <div class="example">
+LocalDate now = LocalDate.now(Clock.systemUTC());
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="now zone zeitzone">
+      <div class="method-header">
+        <div class="method-name">now(ZoneId zone)</div>
+        <div class="return-type">static LocalDate</div>
+      </div>
+      <div class="description">In Zeitzone.</div>
+      <div class="example">
+LocalDate berlin = LocalDate.now(ZoneId.of("Europe/Berlin"));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="of jahr monat tag erzeugen">
+      <div class="method-header">
+        <div class="method-name">of(int y, int m, int d)</div>
+        <div class="return-type">static LocalDate</div>
+      </div>
+      <div class="description">Aus Jahr, Monat, Tag.</div>
+      <div class="example">
+LocalDate d = LocalDate.of(2025, 12, 25);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="of jahr month tag enum">
+      <div class="method-header">
+        <div class="method-name">of(int y, Month m, int d)</div>
+        <div class="return-type">static LocalDate</div>
+      </div>
+      <div class="description">Mit Month-Enum.</div>
+      <div class="example">
+LocalDate d = LocalDate.of(2025, Month.DECEMBER, 25);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="ofepochday epoch tag 1970">
+      <div class="method-header">
+        <div class="method-name">ofEpochDay(long e)</div>
+        <div class="return-type">static LocalDate</div>
+      </div>
+      <div class="description">Aus Epoch-Tag.</div>
+      <div class="example">
+LocalDate d = LocalDate.ofEpochDay(0); // 1970-01-01
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="ofinstant instant zeitzone">
+      <div class="method-header">
+        <div class="method-name">ofInstant(Instant i, ZoneId z)</div>
+        <div class="return-type">static LocalDate</div>
+      </div>
+      <div class="description">Aus Instant.</div>
+      <div class="example">
+LocalDate d = LocalDate.ofInstant(Instant.now(), ZoneId.of("UTC"));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="ofyearday jahr tag im jahr">
+      <div class="method-header">
+        <div class="method-name">ofYearDay(int y, int d)</div>
+        <div class="return-type">static LocalDate</div>
+      </div>
+      <div class="description">Aus Jahr + Tag im Jahr.</div>
+      <div class="example">
+LocalDate d = LocalDate.ofYearDay(2025, 100);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="parse string datum erzeugen">
+      <div class="method-header">
+        <div class="method-name">parse(CharSequence t)</div>
+        <div class="return-type">static LocalDate</div>
+      </div>
+      <div class="description">Aus String (YYYY-MM-DD).</div>
+      <div class="example">
+LocalDate d = LocalDate.parse("2025-12-25");
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="parse string formatter format">
+      <div class="method-header">
+        <div class="method-name">parse(CharSequence t, DateTimeFormatter f)</div>
+        <div class="return-type">static LocalDate</div>
+      </div>
+      <div class="description">Mit Formatter.</div>
+      <div class="example">
+DateTimeFormatter f = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+LocalDate d = LocalDate.parse("25.12.2025", f);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="plus addieren einheit chronounit">
+      <div class="method-header">
+        <div class="method-name">plus(long a, TemporalUnit u)</div>
+        <div class="return-type">LocalDate</div>
+      </div>
+      <div class="description">Addiert Einheit.</div>
+      <div class="example">
+LocalDate future = LocalDate.now().plus(3, ChronoUnit.MONTHS);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="plus period addieren">
+      <div class="method-header">
+        <div class="method-name">plus(TemporalAmount a)</div>
+        <div class="return-type">LocalDate</div>
+      </div>
+      <div class="description">Addiert Period.</div>
+      <div class="example">
+LocalDate f = LocalDate.now().plus(Period.ofDays(10));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="plusdays tage addieren">
+      <div class="method-header">
+        <div class="method-name">plusDays(long d)</div>
+        <div class="return-type">LocalDate</div>
+      </div>
+      <div class="description">Addiert Tage.</div>
+      <div class="example">
+LocalDate d = LocalDate.now().plusDays(5);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="plusmonths monate addieren">
+      <div class="method-header">
+        <div class="method-name">plusMonths(long m)</div>
+        <div class="return-type">LocalDate</div>
+      </div>
+      <div class="description">Addiert Monate.</div>
+      <div class="example">
+LocalDate m = LocalDate.now().plusMonths(1);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="plusweeks wochen addieren">
+      <div class="method-header">
+        <div class="method-name">plusWeeks(long w)</div>
+        <div class="return-type">LocalDate</div>
+      </div>
+      <div class="description">Addiert Wochen.</div>
+      <div class="example">
+LocalDate w = LocalDate.now().plusWeeks(1);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="plusyears jahre addieren">
+      <div class="method-header">
+        <div class="method-name">plusYears(long y)</div>
+        <div class="return-type">LocalDate</div>
+      </div>
+      <div class="description">Addiert Jahre.</div>
+      <div class="example">
+LocalDate y = LocalDate.now().plusYears(1);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="query abfrage temporalquery">
+      <div class="method-header">
+        <div class="method-name">query(TemporalQuery&lt;R&gt; q)</div>
+        <div class="return-type">&lt;R&gt; R</div>
+      </div>
+      <div class="description">Benutzerdefinierte Abfrage.</div>
+      <div class="example">
+Year y = LocalDate.now().query(TemporalQueries.localDate().andThen(TemporalQueries::year));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="range bereich chronofield">
+      <div class="method-header">
+        <div class="method-name">range(TemporalField f)</div>
+        <div class="return-type">ValueRange</div>
+      </div>
+      <div class="description">Gültiger Wertebereich.</div>
+      <div class="example">
+ValueRange r = LocalDate.now().range(ChronoField.DAY_OF_MONTH);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="toepochsecond sekunden 1970">
+      <div class="method-header">
+        <div class="method-name">toEpochSecond(LocalTime t, ZoneOffset o)</div>
+        <div class="return-type">long</div>
+      </div>
+      <div class="description">Sekunden seit 1970.</div>
+      <div class="example">
+long sec = LocalDate.now().toEpochSecond(LocalTime.NOON, ZoneOffset.UTC);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="tostring string datum">
+      <div class="method-header">
+        <div class="method-name">toString()</div>
+        <div class="return-type">String</div>
+      </div>
+      <div class="description">Als YYYY-MM-DD.</div>
+      <div class="example">
+String s = LocalDate.now().toString();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="until period zwischen differenz">
+      <div class="method-header">
+        <div class="method-name">until(ChronoLocalDate end)</div>
+        <div class="return-type">Period</div>
+      </div>
+      <div class="description">Period zwischen Daten.</div>
+      <div class="example">
+Period p = LocalDate.of(2000,1,1).until(LocalDate.now());
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="until differenz einheit chronounit">
+      <div class="method-header">
+        <div class="method-name">until(Temporal e, TemporalUnit u)</div>
+        <div class="return-type">long</div>
+      </div>
+      <div class="description">Differenz in Einheit.</div>
+      <div class="example">
+long days = LocalDate.now().until(LocalDate.of(2025,12,25), ChronoUnit.DAYS);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="with adjuster anpassen">
+      <div class="method-header">
+        <div class="method-name">with(TemporalAdjuster a)</div>
+        <div class="return-type">LocalDate</div>
+      </div>
+      <div class="description">Mit Adjuster.</div>
+      <div class="example">
+LocalDate first = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth());
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="with feld setzen chronofield">
+      <div class="method-header">
+        <div class="method-name">with(TemporalField f, long v)</div>
+        <div class="return-type">LocalDate</div>
+      </div>
+      <div class="description">Setzt Feldwert.</div>
+      <div class="example">
+LocalDate d = LocalDate.now().with(ChronoField.DAY_OF_MONTH, 15);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="withdayofmonth tag monat setzen">
+      <div class="method-header">
+        <div class="method-name">withDayOfMonth(int d)</div>
+        <div class="return-type">LocalDate</div>
+      </div>
+      <div class="description">Ändert Tag im Monat.</div>
+      <div class="example">
+LocalDate d = LocalDate.now().withDayOfMonth(1);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="withdayofyear tag jahr setzen">
+      <div class="method-header">
+        <div class="method-name">withDayOfYear(int d)</div>
+        <div class="return-type">LocalDate</div>
+      </div>
+      <div class="description">Ändert Tag im Jahr.</div>
+      <div class="example">
+LocalDate d = LocalDate.now().withDayOfYear(200);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="withmonth monat setzen ändern">
+      <div class="method-header">
+        <div class="method-name">withMonth(int m)</div>
+        <div class="return-type">LocalDate</div>
+      </div>
+      <div class="description">Ändert Monat.</div>
+      <div class="example">
+LocalDate d = LocalDate.now().withMonth(12);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="withyear jahr setzen ändern">
+      <div class="method-header">
+        <div class="method-name">withYear(int y)</div>
+        <div class="return-type">LocalDate</div>
+      </div>
+      <div class="description">Ändert Jahr.</div>
+      <div class="example">
+LocalDate d = LocalDate.now().withYear(2030);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- === LocalDateTime === -->
+  <div id="localdatetime" class="tab-content">
+    <div class="controls">
+      <div class="search-box">
+        <input type="text" class="search-input" placeholder="LocalDateTime suchen..." autocomplete="off">
+      </div>
+      <button class="btn theme-btn toggle-btn">Light Mode</button>
+      <button class="btn pdf-btn" onclick="window.print()">PDF Export</button>
+    </div>
+    <div class="no-results">Keine LocalDateTime-Methoden gefunden.</div>
+
+    <!-- Alle LocalDateTime Methoden -->
+    <div class="method-card" data-keywords="atdate datum localdate">
+      <div class="method-header">
+        <div class="method-name">atDate(LocalDate date)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Kombiniert Zeit mit Datum.</div>
+      <div class="example">
+LocalDateTime dt = LocalTime.now().atDate(LocalDate.of(2025, 12, 25));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="atoffset offset zoneoffset">
+      <div class="method-header">
+        <div class="method-name">atOffset(ZoneOffset offset)</div>
+        <div class="return-type">OffsetDateTime</div>
+      </div>
+      <div class="description">Mit Zeitzonen-Offset.</div>
+      <div class="example">
+OffsetDateTime odt = LocalDateTime.now().atOffset(ZoneOffset.UTC);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="atzone zoneid zoneddatetime">
+      <div class="method-header">
+        <div class="method-name">atZone(ZoneId zone)</div>
+        <div class="return-type">ZonedDateTime</div>
+      </div>
+      <div class="description">Mit Zeitzone.</div>
+      <div class="example">
+ZonedDateTime zdt = LocalDateTime.now().atZone(ZoneId.of("Europe/Berlin"));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="compareto vergleichen">
+      <div class="method-header">
+        <div class="method-name">compareTo(ChronoLocalDateTime&lt;?&gt; other)</div>
+        <div class="return-type">int</div>
+      </div>
+      <div class="description">Vergleicht zwei Zeitpunkte.</div>
+      <div class="example">
+int cmp = LocalDateTime.now().compareTo(LocalDateTime.of(2000,1,1,0,0));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="format datetimeformatter string">
+      <div class="method-header">
+        <div class="method-name">format(DateTimeFormatter formatter)</div>
+        <div class="return-type">String</div>
+      </div>
+      <div class="description">Formatiert als String.</div>
+      <div class="example">
+String s = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="from temporalaccessor static">
+      <div class="method-header">
+        <div class="method-name">from(TemporalAccessor temporal)</div>
+        <div class="return-type">static LocalDateTime</div>
+      </div>
+      <div class="description">Aus temporalem Objekt.</div>
+      <div class="example">
+LocalDateTime dt = LocalDateTime.from(ZonedDateTime.now());
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="get feld chronofield">
+      <div class="method-header">
+        <div class="method-name">get(TemporalField field)</div>
+        <div class="return-type">int</div>
+      </div>
+      <div class="description">Wert eines Feldes.</div>
+      <div class="example">
+int hour = LocalDateTime.now().get(ChronoField.HOUR_OF_DAY);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="getdayofmonth tag monat">
+      <div class="method-header">
+        <div class="method-name">getDayOfMonth()</div>
+        <div class="return-type">int</div>
+      </div>
+      <div class="description">Tag im Monat.</div>
+      <div class="example">
+int day = LocalDateTime.now().getDayOfMonth();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="getdayofweek wochentag">
+      <div class="method-header">
+        <div class="method-name">getDayOfWeek()</div>
+        <div class="return-type">DayOfWeek</div>
+      </div>
+      <div class="description">Wochentag als Enum.</div>
+      <div class="example">
+DayOfWeek dow = LocalDateTime.now().getDayOfWeek();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="getdayofyear tag jahr">
+      <div class="method-header">
+        <div class="method-name">getDayOfYear()</div>
+        <div class="return-type">int</div>
+      </div>
+      <div class="description">Tag im Jahr.</div>
+      <div class="example">
+int doy = LocalDateTime.now().getDayOfYear();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="gethour stunde">
+      <div class="method-header">
+        <div class="method-name">getHour()</div>
+        <div class="return-type">int</div>
+      </div>
+      <div class="description">Stunde (0–23).</div>
+      <div class="example">
+int h = LocalDateTime.now().getHour();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="getminute minute">
+      <div class="method-header">
+        <div class="method-name">getMinute()</div>
+        <div class="return-type">int</div>
+      </div>
+      <div class="description">Minute.</div>
+      <div class="example">
+int m = LocalDateTime.now().getMinute();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="getmonth monat">
+      <div class="method-header">
+        <div class="method-name">getMonth()</div>
+        <div class="return-type">Month</div>
+      </div>
+      <div class="description">Monat als Enum.</div>
+      <div class="example">
+Month mon = LocalDateTime.now().getMonth();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="getmonthvalue monat zahl">
+      <div class="method-header">
+        <div class="method-name">getMonthValue()</div>
+        <div class="return-type">int</div>
+      </div>
+      <div class="description">Monat als Zahl (1–12).</div>
+      <div class="example">
+int mv = LocalDateTime.now().getMonthValue();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="getnano nanosekunde">
+      <div class="method-header">
+        <div class="method-name">getNano()</div>
+        <div class="return-type">int</div>
+      </div>
+      <div class="description">Nanosekunden.</div>
+      <div class="example">
+int nano = LocalDateTime.now().getNano();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="getsecond sekunde">
+      <div class="method-header">
+        <div class="method-name">getSecond()</div>
+        <div class="return-type">int</div>
+      </div>
+      <div class="description">Sekunde.</div>
+      <div class="example">
+int sec = LocalDateTime.now().getSecond();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="getyear jahr">
+      <div class="method-header">
+        <div class="method-name">getYear()</div>
+        <div class="return-type">int</div>
+      </div>
+      <div class="description">Jahr.</div>
+      <div class="example">
+int y = LocalDateTime.now().getYear();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="isafter nach später">
+      <div class="method-header">
+        <div class="method-name">isAfter(ChronoLocalDateTime&lt;?&gt; other)</div>
+        <div class="return-type">boolean</div>
+      </div>
+      <div class="description">Ist nach anderem Zeitpunkt?</div>
+      <div class="example">
+boolean after = LocalDateTime.now().isAfter(LocalDateTime.of(2000,1,1,0,0));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="isbefore vor früher">
+      <div class="method-header">
+        <div class="method-name">isBefore(ChronoLocalDateTime&lt;?&gt; other)</div>
+        <div class="return-type">boolean</div>
+      </div>
+      <div class="description">Ist vor anderem Zeitpunkt?</div>
+      <div class="example">
+boolean before = LocalDateTime.of(2000,1,1,0,0).isBefore(LocalDateTime.now());
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="isequal gleich identisch">
+      <div class="method-header">
+        <div class="method-name">isEqual(ChronoLocalDateTime&lt;?&gt; other)</div>
+        <div class="return-type">boolean</div>
+      </div>
+      <div class="description">Ist gleich?</div>
+      <div class="example">
+boolean eq = LocalDateTime.now().isEqual(LocalDateTime.now());
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="issupported feld chronofield">
+      <div class="method-header">
+        <div class="method-name">isSupported(TemporalField field)</div>
+        <div class="return-type">boolean</div>
+      </div>
+      <div class="description">Unterstützt Feld?</div>
+      <div class="example">
+boolean sup = LocalDateTime.now().isSupported(ChronoField.HOUR_OF_DAY);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="issupported einheit chronounit">
+      <div class="method-header">
+        <div class="method-name">isSupported(TemporalUnit unit)</div>
+        <div class="return-type">boolean</div>
+      </div>
+      <div class="description">Unterstützt Einheit?</div>
+      <div class="example">
+boolean sup = LocalDateTime.now().isSupported(ChronoUnit.MINUTES);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="minus subtrahieren einheit">
+      <div class="method-header">
+        <div class="method-name">minus(long amount, TemporalUnit unit)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Subtrahiert Einheit.</div>
+      <div class="example">
+LocalDateTime past = LocalDateTime.now().minus(5, ChronoUnit.HOURS);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="minus period duration subtrahieren">
+      <div class="method-header">
+        <div class="method-name">minus(TemporalAmount amount)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Subtrahiert Period/Duration.</div>
+      <div class="example">
+LocalDateTime past = LocalDateTime.now().minus(Period.ofDays(1));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="minusdays tage subtrahieren">
+      <div class="method-header">
+        <div class="method-name">minusDays(long days)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Subtrahiert Tage.</div>
+      <div class="example">
+LocalDateTime ago = LocalDateTime.now().minusDays(7);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="minushours stunden subtrahieren">
+      <div class="method-header">
+        <div class="method-name">minusHours(long hours)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Subtrahiert Stunden.</div>
+      <div class="example">
+LocalDateTime ago = LocalDateTime.now().minusHours(3);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="minusminutes minuten subtrahieren">
+      <div class="method-header">
+        <div class="method-name">minusMinutes(long minutes)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Subtrahiert Minuten.</div>
+      <div class="example">
+LocalDateTime ago = LocalDateTime.now().minusMinutes(30);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="minusmonths monate subtrahieren">
+      <div class="method-header">
+        <div class="method-name">minusMonths(long months)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Subtrahiert Monate.</div>
+      <div class="example">
+LocalDateTime ago = LocalDateTime.now().minusMonths(2);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="minusnanos nanosekunden subtrahieren">
+      <div class="method-header">
+        <div class="method-name">minusNanos(long nanos)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Subtrahiert Nanosekunden.</div>
+      <div class="example">
+LocalDateTime ago = LocalDateTime.now().minusNanos(500_000_000);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="minusseconds sekunden subtrahieren">
+      <div class="method-header">
+        <div class="method-name">minusSeconds(long seconds)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Subtrahiert Sekunden.</div>
+      <div class="example">
+LocalDateTime ago = LocalDateTime.now().minusSeconds(60);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="minusweeks wochen subtrahieren">
+      <div class="method-header">
+        <div class="method-name">minusWeeks(long weeks)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Subtrahiert Wochen.</div>
+      <div class="example">
+LocalDateTime ago = LocalDateTime.now().minusWeeks(1);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="minusyears jahre subtrahieren">
+      <div class="method-header">
+        <div class="method-name">minusYears(long years)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Subtrahiert Jahre.</div>
+      <div class="example">
+LocalDateTime ago = LocalDateTime.now().minusYears(5);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="now aktuell datum zeit">
+      <div class="method-header">
+        <div class="method-name">now()</div>
+        <div class="return-type">static LocalDateTime</div>
+      </div>
+      <div class="description">Aktueller Zeitpunkt.</div>
+      <div class="example">
+LocalDateTime now = LocalDateTime.now();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="now clock uhr">
+      <div class="method-header">
+        <div class="method-name">now(Clock clock)</div>
+        <div class="return-type">static LocalDateTime</div>
+      </div>
+      <div class="description">Mit Clock.</div>
+      <div class="example">
+LocalDateTime now = LocalDateTime.now(Clock.systemUTC());
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="now zone zeitzone">
+      <div class="method-header">
+        <div class="method-name">now(ZoneId zone)</div>
+        <div class="return-type">static LocalDateTime</div>
+      </div>
+      <div class="description">In Zeitzone.</div>
+      <div class="example">
+LocalDateTime berlin = LocalDateTime.now(ZoneId.of("Europe/Berlin"));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="of jahr monat tag stunde minute">
+      <div class="method-header">
+        <div class="method-name">of(int y, int m, int d, int h, int min)</div>
+        <div class="return-type">static LocalDateTime</div>
+      </div>
+      <div class="description">Aus Jahr, Monat, Tag, Stunde, Minute.</div>
+      <div class="example">
+LocalDateTime dt = LocalDateTime.of(2025, 12, 25, 14, 30);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="of jahr monat tag stunde minute sekunde">
+      <div class="method-header">
+        <div class="method-name">of(int y, int m, int d, int h, int min, int s)</div>
+        <div class="return-type">static LocalDateTime</div>
+      </div>
+      <div class="description">Mit Sekunden.</div>
+      <div class="example">
+LocalDateTime dt = LocalDateTime.of(2025, 12, 25, 14, 30, 0);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="of jahr monat tag stunde minute sekunde nano">
+      <div class="method-header">
+        <div class="method-name">of(int y, int m, int d, int h, int min, int s, int n)</div>
+        <div class="return-type">static LocalDateTime</div>
+      </div>
+      <div class="description">Mit Nanosekunden.</div>
+      <div class="example">
+LocalDateTime dt = LocalDateTime.of(2025, 12, 25, 14, 30, 0, 500_000_000);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="of jahr month tag stunde minute">
+      <div class="method-header">
+        <div class="method-name">of(int y, Month m, int d, int h, int min)</div>
+        <div class="return-type">static LocalDateTime</div>
+      </div>
+      <div class="description">Mit Month-Enum.</div>
+      <div class="example">
+LocalDateTime dt = LocalDateTime.of(2025, Month.DECEMBER, 25, 14, 30);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="of localdate localtime datum zeit">
+      <div class="method-header">
+        <div class="method-name">of(LocalDate date, LocalTime time)</div>
+        <div class="return-type">static LocalDateTime</div>
+      </div>
+      <div class="description">Aus LocalDate + LocalTime.</div>
+      <div class="example">
+LocalDateTime dt = LocalDateTime.of(LocalDate.now(), LocalTime.NOON);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="ofepochsecond epoch 1970 sekunde">
+      <div class="method-header">
+        <div class="method-name">ofEpochSecond(long epochSecond, int nano, ZoneOffset offset)</div>
+        <div class="return-type">static LocalDateTime</div>
+      </div>
+      <div class="description">Aus Epoch-Sekunden.</div>
+      <div class="example">
+LocalDateTime dt = LocalDateTime.ofEpochSecond(0, 0, ZoneOffset.UTC); // 1970-01-01T00:00
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="ofinstant instant zeitzone">
+      <div class="method-header">
+        <div class="method-name">ofInstant(Instant instant, ZoneId zone)</div>
+        <div class="return-type">static LocalDateTime</div>
+      </div>
+      <div class="description">Aus Instant.</div>
+      <div class="example">
+LocalDateTime dt = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC"));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="parse string datum zeit">
+      <div class="method-header">
+        <div class="method-name">parse(CharSequence text)</div>
+        <div class="return-type">static LocalDateTime</div>
+      </div>
+      <div class="description">Aus String (ISO: yyyy-MM-ddTHH:mm:ss).</div>
+      <div class="example">
+LocalDateTime dt = LocalDateTime.parse("2025-12-25T14:30:00");
+               <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="parse string formatter format">
+      <div class="method-header">
+        <div class="method-name">parse(CharSequence text, DateTimeFormatter formatter)</div>
+        <div class="return-type">static LocalDateTime</div>
+      </div>
+      <div class="description">Mit eigenem Formatter.</div>
+      <div class="example">
+DateTimeFormatter f = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+LocalDateTime dt = LocalDateTime.parse("25.12.2025 14:30", f);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="plus addieren einheit">
+      <div class="method-header">
+        <div class="method-name">plus(long amount, TemporalUnit unit)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Addiert Einheit.</div>
+      <div class="example">
+LocalDateTime future = LocalDateTime.now().plus(2, ChronoUnit.DAYS);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="plus period duration addieren">
+      <div class="method-header">
+        <div class="method-name">plus(TemporalAmount amount)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Addiert Period/Duration.</div>
+      <div class="example">
+LocalDateTime f = LocalDateTime.now().plus(Period.ofWeeks(1));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="plusdays tage addieren">
+      <div class="method-header">
+        <div class="method-name">plusDays(long days)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Addiert Tage.</div>
+      <div class="example">
+LocalDateTime d = LocalDateTime.now().plusDays(3);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="plushours stunden addieren">
+      <div class="method-header">
+        <div class="method-name">plusHours(long hours)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Addiert Stunden.</div>
+      <div class="example">
+LocalDateTime h = LocalDateTime.now().plusHours(5);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="plusminutes minuten addieren">
+      <div class="method-header">
+        <div class="method-name">plusMinutes(long minutes)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Addiert Minuten.</div>
+      <div class="example">
+LocalDateTime m = LocalDateTime.now().plusMinutes(45);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="plusmonths monate addieren">
+      <div class="method-header">
+        <div class="method-name">plusMonths(long months)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Addiert Monate.</div>
+      <div class="example">
+LocalDateTime m = LocalDateTime.now().plusMonths(1);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="plusnanos nanosekunden addieren">
+      <div class="method-header">
+        <div class="method-name">plusNanos(long nanos)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Addiert Nanosekunden.</div>
+      <div class="example">
+LocalDateTime n = LocalDateTime.now().plusNanos(500_000_000);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="plusseconds sekunden addieren">
+      <div class="method-header">
+        <div class="method-name">plusSeconds(long seconds)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Addiert Sekunden.</div>
+      <div class="example">
+LocalDateTime s = LocalDateTime.now().plusSeconds(120);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="plusweeks wochen addieren">
+      <div class="method-header">
+        <div class="method-name">plusWeeks(long weeks)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Addiert Wochen.</div>
+      <div class="example">
+LocalDateTime w = LocalDateTime.now().plusWeeks(2);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="plusyears jahre addieren">
+      <div class="method-header">
+        <div class="method-name">plusYears(long years)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Addiert Jahre.</div>
+      <div class="example">
+LocalDateTime y = LocalDateTime.now().plusYears(1);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="toLocalDate datum">
+      <div class="method-header">
+        <div class="method-name">toLocalDate()</div>
+        <div class="return-type">LocalDate</div>
+      </div>
+      <div class="description">Nur das Datum.</div>
+      <div class="example">
+LocalDate d = LocalDateTime.now().toLocalDate();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="toLocalTime zeit">
+      <div class="method-header">
+        <div class="method-name">toLocalTime()</div>
+        <div class="return-type">LocalTime</div>
+      </div>
+      <div class="description">Nur die Zeit.</div>
+      <div class="example">
+LocalTime t = LocalDateTime.now().toLocalTime();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="truncatedto abschneiden chronounit">
+      <div class="method-header">
+        <div class="method-name">truncatedTo(TemporalUnit unit)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Abschneiden auf Einheit (z. B. Stunden).</div>
+      <div class="example">
+LocalDateTime t = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="with adjuster anpassen">
+      <div class="method-header">
+        <div class="method-name">with(TemporalAdjuster adjuster)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Mit Adjuster.</div>
+      <div class="example">
+LocalDateTime first = LocalDateTime.now().with(TemporalAdjusters.firstDayOfMonth());
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="with feld setzen chronofield">
+      <div class="method-header">
+        <div class="method-name">with(TemporalField field, long value)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Setzt Feldwert.</div>
+      <div class="example">
+LocalDateTime d = LocalDateTime.now().with(ChronoField.HOUR_OF_DAY, 9);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="withdayofmonth tag monat setzen">
+      <div class="method-header">
+        <div class="method-name">withDayOfMonth(int day)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Ändert Tag im Monat.</div>
+      <div class="example">
+LocalDateTime d = LocalDateTime.now().withDayOfMonth(1);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="withdayofyear tag jahr setzen">
+      <div class="method-header">
+        <div class="method-name">withDayOfYear(int day)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Ändert Tag im Jahr.</div>
+      <div class="example">
+LocalDateTime d = LocalDateTime.now().withDayOfYear(100);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="withhour stunde setzen">
+      <div class="method-header">
+        <div class="method-name">withHour(int hour)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Ändert Stunde.</div>
+      <div class="example">
+LocalDateTime h = LocalDateTime.now().withHour(14);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="withminute minute setzen">
+      <div class="method-header">
+        <div class="method-name">withMinute(int minute)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Ändert Minute.</div>
+      <div class="example">
+LocalDateTime m = LocalDateTime.now().withMinute(30);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="withmonth monat setzen">
+      <div class="method-header">
+        <div class="method-name">withMonth(int month)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Ändert Monat.</div>
+      <div class="example">
+LocalDateTime m = LocalDateTime.now().withMonth(12);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="withnano nanosekunde setzen">
+      <div class="method-header">
+        <div class="method-name">withNano(int nano)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Ändert Nanosekunden.</div>
+      <div class="example">
+LocalDateTime n = LocalDateTime.now().withNano(0);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="withsecond sekunde setzen">
+      <div class="method-header">
+        <div class="method-name">withSecond(int second)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Ändert Sekunden.</div>
+      <div class="example">
+LocalDateTime s = LocalDateTime.now().withSecond(0);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="withyear jahr setzen">
+      <div class="method-header">
+        <div class="method-name">withYear(int year)</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Ändert Jahr.</div>
+      <div class="example">
+LocalDateTime y = LocalDateTime.now().withYear(2030);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- === ZonedDateTime === -->
+  <div id="zoneddatetime" class="tab-content">
+    <div class="controls">
+      <div class="search-box">
+        <input type="text" class="search-input" placeholder="ZonedDateTime suchen..." autocomplete="off">
+      </div>
+      <button class="btn theme-btn toggle-btn">Light Mode</button>
+      <button class="btn pdf-btn" onclick="window.print()">PDF Export</button>
+    </div>
+    <div class="no-results">Keine ZonedDateTime-Methoden gefunden.</div>
+
+    <div style="background: var(--code-bg); padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 0.9rem; color: var(--text-light);">
+  <strong>Hinweis:</strong> <code>ZonedDateTime</code> erbt <strong>alle Methoden</strong> von <code>LocalDateTime</code> (plus/minus, with, get, etc.).<br>
+  Hier nur die <strong>16 zusätzlichen, zeitzonenspezifischen Methoden</strong>.
+</div>
+
+    <div class="method-card" data-keywords="format formatter string">
+      <div class="method-header">
+        <div class="method-name">format(DateTimeFormatter formatter)</div>
+        <div class="return-type">String</div>
+      </div>
+      <div class="description">Formatiert mit Zeitzone.</div>
+      <div class="example">
+String s = ZonedDateTime.now().format(DateTimeFormatter.ISO_ZONED_DATE_TIME);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="from temporalaccessor static">
+      <div class="method-header">
+        <div class="method-name">from(TemporalAccessor temporal)</div>
+        <div class="return-type">static ZonedDateTime</div>
+      </div>
+      <div class="description">Aus temporalem Objekt.</div>
+      <div class="example">
+ZonedDateTime z = ZonedDateTime.from(OffsetDateTime.now());
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="getoffset zoneoffset">
+      <div class="method-header">
+        <div class="method-name">getOffset()</div>
+        <div class="return-type">ZoneOffset</div>
+      </div>
+      <div class="description">Aktueller Offset.</div>
+      <div class="example">
+ZoneOffset o = ZonedDateTime.now().getOffset();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="getzone zoneid">
+      <div class="method-header">
+        <div class="method-name">getZone()</div>
+        <div class="return-type">ZoneId</div>
+      </div>
+      <div class="description">Zeitzone.</div>
+      <div class="example">
+ZoneId z = ZonedDateTime.now().getZone();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="minus subtrahieren einheit">
+      <div class="method-header">
+        <div class="method-name">minus(long amount, TemporalUnit unit)</div>
+        <div class="return-type">ZonedDateTime</div>
+      </div>
+      <div class="description">Subtrahiert Einheit.</div>
+      <div class="example">
+ZonedDateTime past = ZonedDateTime.now().minus(1, ChronoUnit.DAYS);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="now aktuell zeitzone">
+      <div class="method-header">
+        <div class="method-name">now()</div>
+        <div class="return-type">static ZonedDateTime</div>
+      </div>
+      <div class="description">Aktuell in Systemzeitzone.</div>
+      <div class="example">
+ZonedDateTime now = ZonedDateTime.now();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="now zone zeitzone">
+      <div class="method-header">
+        <div class="method-name">now(ZoneId zone)</div>
+        <div class="return-type">static ZonedDateTime</div>
+      </div>
+      <div class="description">In spezifischer Zone.</div>
+      <div class="example">
+ZonedDateTime tokyo = ZonedDateTime.now(ZoneId.of("Asia/Tokyo"));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="of localdatetime zone">
+      <div class="method-header">
+        <div class="method-name">of(LocalDateTime ldt, ZoneId zone)</div>
+        <div class="return-type">static ZonedDateTime</div>
+      </div>
+      <div class="description">Aus LocalDateTime + Zone.</div>
+      <div class="example">
+ZonedDateTime z = ZonedDateTime.of(LocalDateTime.now(), ZoneId.of("UTC"));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="ofinstant instant zone">
+      <div class="method-header">
+        <div class="method-name">ofInstant(Instant i, ZoneId z)</div>
+        <div class="return-type">static ZonedDateTime</div>
+      </div>
+      <div class="description">Aus Instant + Zone.</div>
+      <div class="example">
+ZonedDateTime z = ZonedDateTime.ofInstant(Instant.now(), ZoneId.of("Europe/Paris"));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="parse string zeitzone">
+      <div class="method-header">
+        <div class="method-name">parse(CharSequence text)</div>
+        <div class="return-type">static ZonedDateTime</div>
+      </div>
+      <div class="description">Aus ISO-String mit Zone.</div>
+      <div class="example">
+ZonedDateTime z = ZonedDateTime.parse("2025-12-25T14:30:00+01:00[Europe/Berlin]");
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="plus addieren einheit">
+      <div class="method-header">
+        <div class="method-name">plus(long amount, TemporalUnit unit)</div>
+        <div class="return-type">ZonedDateTime</div>
+      </div>
+      <div class="description">Addiert Einheit.</div>
+      <div class="example">
+ZonedDateTime f = ZonedDateTime.now().plus(2, ChronoUnit.HOURS);
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="toinstant instant">
+      <div class="method-header">
+        <div class="method-name">toInstant()</div>
+        <div class="return-type">Instant</div>
+      </div>
+      <div class="description">Als UTC-Instant.</div>
+      <div class="example">
+Instant i = ZonedDateTime.now().toInstant();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="tolocaldatetime localdatetime">
+      <div class="method-header">
+        <div class="method-name">toLocalDateTime()</div>
+        <div class="return-type">LocalDateTime</div>
+      </div>
+      <div class="description">Ohne Zeitzone.</div>
+      <div class="example">
+LocalDateTime ldt = ZonedDateTime.now().toLocalDateTime();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="tooffsetdatetime offsetdatetime">
+      <div class="method-header">
+        <div class="method-name">toOffsetDateTime()</div>
+        <div class="return-type">OffsetDateTime</div>
+      </div>
+      <div class="description">Mit festem Offset.</div>
+      <div class="example">
+OffsetDateTime odt = ZonedDateTime.now().toOffsetDateTime();
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="withzone sameinstant gleicher moment">
+      <div class="method-header">
+        <div class="method-name">withZoneSameInstant(ZoneId zone)</div>
+        <div class="return-type">ZonedDateTime</div>
+      </div>
+      <div class="description">Gleicher Moment, andere Zone.</div>
+      <div class="example">
+ZonedDateTime ny = ZonedDateTime.now().withZoneSameInstant(ZoneId.of("America/New_York"));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+    <div class="method-card" data-keywords="withzone samelocal gleiche uhrzeit">
+      <div class="method-header">
+        <div class="method-name">withZoneSameLocal(ZoneId zone)</div>
+        <div class="return-type">ZonedDateTime</div>
+      </div>
+      <div class="description">Gleiche Uhrzeit, andere Zone.</div>
+      <div class="example">
+ZonedDateTime same = ZonedDateTime.now().withZoneSameLocal(ZoneId.of("UTC"));
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Tab-Wechsel
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+        document.querySelectorAll('.search-input').forEach(input => input.value = '');
+        filterMethods(document.getElementById(tab.dataset.tab));
+      });
+    });
+
+    // Theme Toggle
+const themeToggles = document.querySelectorAll('.toggle-btn');
+const body = document.body;
+
+themeToggles.forEach(toggle => {
+  toggle.addEventListener('click', () => {
+    if (body.dataset.theme === 'dark') {
+      body.dataset.theme = 'light';
+      themeToggles.forEach(btn => btn.textContent = 'Dark Mode');
+    } else {
+      body.dataset.theme = 'dark';
+      themeToggles.forEach(btn => btn.textContent = 'Light Mode');
+    }
+  });
+});
+
+    // Copy Code
+    function copyCode(btn) {
+      const code = btn.parentElement.innerText.replace('Copy', '').trim();
+      navigator.clipboard.writeText(code).then(() => {
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+      });
+    }
+
+    // Search Filter
+    document.querySelectorAll('.search-input').forEach(input => {
+      input.addEventListener('input', () => {
+        const tabId = document.querySelector('.tab.active').dataset.tab;
+        filterMethods(document.getElementById(tabId), input.value);
+      });
+    });
+
+    function filterMethods(container, query = '') {
+      const cards = container.querySelectorAll('.method-card');
+      const noResults = container.querySelector('.no-results');
+      let visible = 0;
+      const q = query.toLowerCase().trim();
+
+      cards.forEach(card => {
+        const keywords = card.dataset.keywords.toLowerCase();
+        const name = card.querySelector('.method-name').textContent.toLowerCase();
+        if (q === '' || keywords.includes(q) || name.includes(q)) {
+          card.classList.add('show');
+          visible++;
+        } else {
+          card.classList.remove('show');
+        }
+      });
+
+      noResults.style.display = visible === 0 ? 'block' : 'none';
+    }
+
+    // Initial Filter
+    document.querySelectorAll('.tab-content').forEach(tab => {
+      filterMethods(tab);
+    });
+  </script>
+</body>
+</html>
